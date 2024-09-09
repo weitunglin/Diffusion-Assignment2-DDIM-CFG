@@ -18,8 +18,10 @@ class DiffusionModule(nn.Module):
         # DO NOT change the code outside this part.
         # compute noise matching loss.
         B = x0.shape[0]
-        timestep = self.var_scheduler.uniform_sample_t(B, self.device)        
-        loss = x0.mean()
+        t = self.var_scheduler.uniform_sample_t(B, self.device)        
+        xt, eps = self.var_scheduler.add_noise(x0, t)
+        eps_theta = self.network(xt, t)
+        loss = pow(eps - eps_theta, 2).mean()
         ######################
         return loss
     
@@ -51,7 +53,7 @@ class DiffusionModule(nn.Module):
             # create a tensor of shape (2*batch_size,) where the first half is filled with zeros (i.e., null condition).
             assert class_label is not None
             assert len(class_label) == batch_size, f"len(class_label) != batch_size. {len(class_label)} != {batch_size}"
-            raise NotImplementedError("TODO")
+            class_label = torch.cat([torch.zeros_like(class_label), class_label], dim=0)
             #######################
 
         traj = [x_T]
@@ -60,7 +62,9 @@ class DiffusionModule(nn.Module):
             if do_classifier_free_guidance:
                 ######## TODO ########
                 # Assignment 2. Implement the classifier-free guidance.
-                raise NotImplementedError("TODO")
+                noise_uncond_cond = self.network(x_t, timestep=t.to(self.device), class_label=class_label)
+                noise_uncond, noise_cond = noise_uncond_cond.chunk(2)
+                noise_pred = (1 + guidance_scale) * noise_cond - guidance_scale * noise_uncond
                 #######################
             else:
                 noise_pred = self.network(x_t, timestep=t.to(self.device))

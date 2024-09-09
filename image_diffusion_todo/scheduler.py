@@ -86,7 +86,20 @@ class DDPMScheduler(BaseScheduler):
         ######## TODO ########
         # DO NOT change the code outside this part.
         # Assignment 1. Implement the DDPM reverse step.
-        sample_prev = None
+        def extract(input, t: torch.Tensor, x: torch.Tensor):
+            if t.ndim == 0:
+                t = t.unsqueeze(0)
+            shape = x.shape
+            t = t.long().to(input.device)
+            out = torch.gather(input, 0, t)
+            reshape = [t.shape[0]] + [1] * (len(shape) - 1)
+            return out.reshape(*reshape)
+
+        sigmas_t = extract(self.sigmas, t, x_t)
+        alphas_t = extract(self.alphas, t, x_t)
+        alphas_cumprod_t = extract(self.alphas_cumprod, t, x_t)
+        z = torch.randn_like(x_t) if t > 0 else 0.0
+        sample_prev = (1.0 / alphas_t).sqrt() * (x_t - ((1.0 - alphas_t) / (1.0 - alphas_cumprod_t).sqrt()) * eps_theta) + sigmas_t * z
         #######################
         
         return sample_prev
@@ -120,7 +133,17 @@ class DDPMScheduler(BaseScheduler):
         ######## TODO ########
         # DO NOT change the code outside this part.
         # Assignment 1. Implement the DDPM forward step.
-        x_t = None
+        def extract(input, t: torch.Tensor, x: torch.Tensor):
+            if t.ndim == 0:
+                t = t.unsqueeze(0)
+            shape = x.shape
+            t = t.long().to(input.device)
+            out = torch.gather(input, 0, t)
+            reshape = [t.shape[0]] + [1] * (len(shape) - 1)
+            return out.reshape(*reshape)
+
+        alphas_cumprod_t = extract(self.alphas_cumprod, t, x_0)
+        x_t = alphas_cumprod_t.sqrt() * x_0 + (1.0 - alphas_cumprod_t).sqrt() * eps
         #######################
 
         return x_t, eps
