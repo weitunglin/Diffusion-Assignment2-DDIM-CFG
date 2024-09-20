@@ -93,6 +93,7 @@ def main(args):
                 plt.plot(losses)
                 plt.savefig(f"{save_dir}/loss.png")
                 plt.close()
+                # samples = ddpm.sample(6, return_traj=False, class_label=torch.tensor([1,1,2,2,3,3]), guidance_scale=7.5)
                 samples = ddpm.sample(4, return_traj=False)
                 pil_images = tensor_to_pil_image(samples)
                 for i, img in enumerate(pil_images):

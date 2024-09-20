@@ -82,7 +82,7 @@ class UNet(nn.Module):
                 ######## TODO ########
                 # DO NOT change the code outside this part.
                 # Assignment 2-2. Implement random null conditioning in CFG training.
-                p_unconf = torch.randn_like(class_label) < self.cfg_dropout
+                p_unconf = torch.randn_like(class_label.float()) > self.cfg_dropout
                 class_label = class_label * p_unconf
                 #######################
             
