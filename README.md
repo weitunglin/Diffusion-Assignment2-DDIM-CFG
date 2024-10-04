@@ -45,6 +45,7 @@ pip install -r requirements.txt
 **Please note that this assignment is heavily dependent on Assignment 1. To begin, you should copy the functions you implemented in [Assignment 1](https://github.com/KAIST-Visual-AI-Group/Diffusion-Assignment1-DDPM).** Specifically, make sure to complete the required components (e.g., the noise prediction network architecture and the forward/reverse DDPM steps) in the following files:
 - `2d_plot_diffusion_todo/network.py`;
 - `2d_plot_diffusion_todo/ddpm.py`;
+- `image_diffusion_todo/model.py`;
 - `image_diffusion_todo/scheduler.py`.
 
 ## Code Structure
@@ -163,25 +164,32 @@ For now, the main backbone of the network is conditioned only on the diffusion t
 
 #### 2-2: Implement CFG Training
 
-Complete the `TODO` block in the method `forward` of the class `UNet` defined in the file `image_diffusion_todo/network.py`. It should be suffice to write a few lines of code that replace class labels with a zero tensor with a certain probability.
+Complete the `TODO` block in the method `forward` of the class `UNet` defined in the file `image_diffusion_todo/network.py`. It should be suffice to write a few lines of code that replace class labels with a zero tensor with probability `self.cfg_dropout` defined in class `UNet`.
 
 #### 2-3: Implement CFG Sampling
 
-Complete the `if do_classifier_free_guidance` blocks in the method `sample` in the file `image_diffusion_todo/model.py`. In our implementation, the CFG is enabled by setting `cfg_scale` greater than 1.0.
+Complete the `if do_classifier_free_guidance` blocks in the method `sample` in the file `image_diffusion_todo/model.py`. In our implementation, the CFG is enabled by setting `cfg_scale` greater than 0.0.
 
 You can test your implementation by running the script `image_diffusion_todo/sampling.py`. Specifically, run
 ```
-python image_diffusion_todo/sampling.py --ckpt_path @CKPT_PATH --save_dir @DIR_TO_SAVE_IMGS --use_cfg True
+python image_diffusion_todo/sampling.py --ckpt_path @CKPT_PATH --save_dir @DIR_TO_SAVE_IMGS --use_cfg
 ```
 by providing the path to your model's checkpoint trained *with* CFG training enabled.
 
 #### 2-4: Test and Evaluate
 
-As in our previous assignment, evaluate and report the FID measured on the samples generated using CFG with the scale of 0.0, and 7.5 (default). You can use the script `image_diffusion_todo/fid/measure_fid.py` to measure the FID score. The pre-trained inception model for FID is provided in the file `image_diffusion_todo/fid/afhq_inception.ckpt`.
+As in our previous assignment, evaluate and report the FID measured on the samples generated using CFG with the scale of 0.0, and 7.5 (default).
+
+Do NOT forget to execute `dataset.py` before measuring FID score. Otherwise, the output will be incorrect due to the discrepancy between the image resolutions.
+```
+python dataset.py # to constuct eval directory.
+```
+
+After processing the data, use the script `image_diffusion_todo/fid/measure_fid.py` to measure the FID score. The pre-trained inception model for FID is provided in the file `image_diffusion_todo/fid/afhq_inception.ckpt`.
 ```
 python image_diffusion_todo/fid/measure_fid.py @GT_IMG_DIR @ GEN_IMG_DIR
 ```
-Use the root directory of the AFHQ dataset (e.g., `data/afhq`) as @GT_IMG_DIR. The script will automatically search and load the images. The path @DIR_TO_SAVE_IMGS should be the same as the one you provided when running the script `sampling.py`.
+Use the directory containing the processed data (e.g., `data/afhq/eval`) as @GT_IMG_DIR. The script will automatically search and load the images. The path @DIR_TO_SAVE_IMGS should be the same as the one you provided when running the script `sampling.py`.
 
 ## What to Submit
 
